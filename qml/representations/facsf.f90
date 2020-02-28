@@ -1703,14 +1703,14 @@ subroutine fgenerate_local_fchl_acsf(idx, coordinates, nuclear_charges, elements
                 ! calculate the indices that the three body terms should be added to
                 z = s + (l-1) * nabasis
                 ! Add the contributions from atoms i,j and k
-                rep3(i, z:z + nabasis - 1) = rep3(i, z:z + nabasis - 1) + angular * radial(l) * ksi3
+                rep3(1, z:z + nabasis - 1) = rep3(1, z:z + nabasis - 1) + angular * radial(l) * ksi3
             enddo
         enddo
     enddo
     ! !$OMP END PARALLEL DO
-
-    rep = rep + rep3
-    rep2(1, 1:) = rep(idx, :)
+    i = idx + 1
+    rep(i, :) = rep(i, :) + rep3(1, :)
+    rep2(1, :) = rep(i, :)
     deallocate(rep)
     deallocate(element_types)
     deallocate(rdecay)
