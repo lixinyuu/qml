@@ -1710,7 +1710,7 @@ subroutine fgenerate_local_fchl_acsf(idx, coordinates, nuclear_charges, elements
     ! !$OMP END PARALLEL DO
 
     rep = rep + rep3
-    rep2(1, 1:) = rep(1, :)
+    rep2(1, 1:) = rep(idx, :)
     deallocate(rep)
     deallocate(element_types)
     deallocate(rdecay)
