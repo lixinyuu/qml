@@ -33,13 +33,15 @@ from .frepresentations import fgenerate_eigenvalue_coulomb_matrix
 from .frepresentations import fgenerate_bob
 
 from qml.utils import NUCLEAR_CHARGE
+from qml.utils.alchemy import PTP
 
 from .slatm import get_boa
 from .slatm import get_sbop
 from .slatm import get_sbot
 
 from .facsf import fgenerate_local_acsf, fgenerate_acsf, fgenerate_acsf_and_gradients
-from .facsf import fgenerate_local_fchl_acsf, fgenerate_fchl_acsf, fgenerate_fchl_acsf_and_gradients
+from .facsf import fgenerate_local_fchl_acsf, fgenerate_fchl_acsf, fgenerate_fchl_acsf_and_gradients, \
+                   fgenerate_local_alchemy_fchl
 
 def vector_to_matrix(v):
     """ Converts a representation from 1D vector to 2D square matrix.
@@ -887,4 +889,33 @@ def generate_local_fchl_acsf(idx, nuclear_charges, coordinates, elements = [1,6,
             return rep_pad, grad_pad
         else:
             return rep, grad
+        
+def generate_local_alchemy_fchl(idx, nuclear_charges, coordinates, 
+                             unique_groups = [1,3,4,5,9,10,11,12,13,14,15,16,17,18,19],
+                             nRs2=24, nRs3=20, nFourier=1, eta2=0.32, eta3=2.7, zeta=np.pi, rcut=6.0, acut=6.0,
+                             two_body_decay=1.8, three_body_decay=0.57, three_body_weight=13.4,
+                             pad=False, gradients=False):
+
+    Rs2 = np.linspace(0, rcut, 1+nRs2)[1:]
+    Rs3 = np.linspace(0, acut, 1+nRs3)[1:]
+    if idx < 0:
+        idx += len(nuclear_charges)
+    Ts = np.linspace(0, np.pi, 2*nFourier)
+    n_periods = len(unique_groups)
+    natoms = len(coordinates)
+    groups = [PTP[n][1] for n in nuclear_charges]
+    periods = [PTP[n][0] for n in nuclear_charges]
+
+    descr_size = n_periods * nRs2 + (n_periods * (n_periods + 1)) * nRs3* nFourier
+
+    # Normalization constant for three-body 
+    three_body_weight = np.sqrt(eta3/np.pi) * three_body_weight
+
+    rep = fgenerate_local_alchemy_fchl(idx, coordinates, nuclear_charges, periods, groups, unique_groups, Rs2, Rs3,
+            Ts, eta2, eta3, zeta, rcut, acut, natoms, descr_size,
+            two_body_decay, three_body_decay, three_body_weight)
+
+    return rep
+        
+        
 
